@@ -1,0 +1,35 @@
+{
+  "name": "personal-snippets",
+  "contributes": {
+    "snippets": [
+      {
+        "language": "go",
+        "path": "./go.json"
+      },
+      {
+        "language": "svelte",
+        "path": "./svelte.json"
+      },
+      {
+        "language": "javascript",
+        "path": "./javascript.json"
+      },
+      {
+        "language": "typescript",
+        "path": "./javascript.json"
+      },
+      {
+        "language": "javascriptreact",
+        "path": "./javascript.json"
+      },
+      {
+        "language": "typescriptreact",
+        "path": "./javascript.json"
+      },
+      {
+        "language": "rust",
+        "path": "./rust.json"
+      }
+    ]
+  }
+}

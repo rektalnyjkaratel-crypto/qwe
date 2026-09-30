@@ -1,0 +1,68 @@
+{
+  "describe": {
+    "prefix": "desc",
+    "body": [
+      "describe(\"${1:name}\", () => {",
+      "\t$0",
+      "});"
+    ],
+    "description": "Vitest/Jest describe block"
+  },
+  "test": {
+    "prefix": "test",
+    "body": [
+      "test(\"${1:name}\", () => {",
+      "\t$0",
+      "});"
+    ],
+    "description": "Vitest/Jest test"
+  },
+  "async test": {
+    "prefix": "testa",
+    "body": [
+      "test(\"${1:name}\", async () => {",
+      "\t$0",
+      "});"
+    ],
+    "description": "Async Vitest/Jest test"
+  },
+  "expect": {
+    "prefix": "expect",
+    "body": [
+      "expect(${1:value}).toBe(${2:expected});"
+    ],
+    "description": "Expectation"
+  },
+  "fetch json": {
+    "prefix": "fetchj",
+    "body": [
+      "const response = await fetch(${1:url});",
+      "if (!response.ok) {",
+      "\tthrow new Error(`Request failed: \\${response.status}`);",
+      "}",
+      "const ${2:data} = await response.json();"
+    ],
+    "description": "Fetch JSON with status check"
+  },
+  "try catch": {
+    "prefix": "try",
+    "body": [
+      "try {",
+      "\t$1",
+      "} catch (error) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Try/catch block"
+  },
+  "playwright test": {
+    "prefix": "pwt",
+    "body": [
+      "test(\"${1:name}\", async ({ page }) => {",
+      "\tawait page.goto(\"${2:/}\");",
+      "\t$0",
+      "});"
+    ],
+    "description": "Playwright test"
+  }
+}

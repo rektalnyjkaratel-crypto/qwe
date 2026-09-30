@@ -1,0 +1,58 @@
+{
+  "test function": {
+    "prefix": "test",
+    "description": "Rust test function",
+    "body": [
+      "#[test]",
+      "fn ${1:name}() {",
+      "\t${0}",
+      "}"
+    ]
+  },
+  "async tokio test": {
+    "prefix": "atest",
+    "description": "Tokio async test",
+    "body": [
+      "#[tokio::test]",
+      "async fn ${1:name}() {",
+      "\t${0}",
+      "}"
+    ]
+  },
+  "result main": {
+    "prefix": "mainr",
+    "description": "main returning Result",
+    "body": [
+      "fn main() -> Result<(), Box<dyn std::error::Error>> {",
+      "\t${0}",
+      "\tOk(())",
+      "}"
+    ]
+  },
+  "derive debug clone": {
+    "prefix": "derive",
+    "description": "common derives",
+    "body": [
+      "#[derive(Debug, Clone)]"
+    ]
+  },
+  "impl block": {
+    "prefix": "impl",
+    "description": "impl block",
+    "body": [
+      "impl ${1:Type} {",
+      "\t${0}",
+      "}"
+    ]
+  },
+  "match expression": {
+    "prefix": "match",
+    "description": "match expression",
+    "body": [
+      "match ${1:value} {",
+      "\t${2:pattern} => ${3:todo!()},",
+      "\t${0}",
+      "}"
+    ]
+  }
+}

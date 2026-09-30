@@ -1,0 +1,75 @@
+{
+  "if err": {
+    "prefix": "err",
+    "description": "if err != nil",
+    "body": [
+      "if err != nil {",
+      "\treturn ${1:err}",
+      "}"
+    ]
+  },
+  "wrap error": {
+    "prefix": "errw",
+    "description": "return wrapped error",
+    "body": [
+      "if err != nil {",
+      "\treturn ${1:nil}, fmt.Errorf(\"${2:message}: %w\", err)",
+      "}"
+    ]
+  },
+  "test function": {
+    "prefix": "test",
+    "description": "Go test function",
+    "body": [
+      "func Test${1:Name}(t *testing.T) {",
+      "\t${0}",
+      "}"
+    ]
+  },
+  "table test": {
+    "prefix": "table",
+    "description": "Table-driven Go test",
+    "body": [
+      "func Test${1:Name}(t *testing.T) {",
+      "\ttests := []struct {",
+      "\t\tname string",
+      "\t}{",
+      "\t\t{name: \"${2:case}\"},",
+      "\t}",
+      "",
+      "\tfor _, tt := range tests {",
+      "\t\tt.Run(tt.name, func(t *testing.T) {",
+      "\t\t\t${0}",
+      "\t\t})",
+      "\t}",
+      "}"
+    ]
+  },
+  "benchmark": {
+    "prefix": "bench",
+    "description": "Go benchmark",
+    "body": [
+      "func Benchmark${1:Name}(b *testing.B) {",
+      "\tfor i := 0; i < b.N; i++ {",
+      "\t\t${0}",
+      "\t}",
+      "}"
+    ]
+  },
+  "main function": {
+    "prefix": "main",
+    "description": "main function",
+    "body": [
+      "func main() {",
+      "\t${0}",
+      "}"
+    ]
+  },
+  "context background": {
+    "prefix": "ctx",
+    "description": "context background",
+    "body": [
+      "ctx := context.Background()"
+    ]
+  }
+}

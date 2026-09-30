@@ -1,0 +1,118 @@
+{
+  "component": {
+    "prefix": "comp",
+    "body": [
+      "<script lang=\"ts\">",
+      "\t$1",
+      "</script>",
+      "",
+      "$0"
+    ],
+    "description": "Svelte component with TypeScript script"
+  },
+  "props": {
+    "prefix": "props",
+    "body": [
+      "let { $1 } = $props();"
+    ],
+    "description": "Svelte 5 props"
+  },
+  "state": {
+    "prefix": "state",
+    "body": [
+      "let ${1:value} = $state(${2:initial});"
+    ],
+    "description": "Svelte 5 state"
+  },
+  "derived": {
+    "prefix": "derived",
+    "body": [
+      "let ${1:value} = $derived(${2:expression});"
+    ],
+    "description": "Svelte 5 derived value"
+  },
+  "effect": {
+    "prefix": "effect",
+    "body": [
+      "$effect(() => {",
+      "\t$1",
+      "});"
+    ],
+    "description": "Svelte 5 effect"
+  },
+  "if block": {
+    "prefix": "if",
+    "body": [
+      "{#if ${1:condition}}",
+      "\t$0",
+      "{/if}"
+    ],
+    "description": "Svelte if block"
+  },
+  "each block": {
+    "prefix": "each",
+    "body": [
+      "{#each ${1:items} as ${2:item}}",
+      "\t$0",
+      "{/each}"
+    ],
+    "description": "Svelte each block"
+  },
+  "keyed each block": {
+    "prefix": "eacht",
+    "body": [
+      "{#each ${1:items} as ${2:item} (${3:item.id})}",
+      "\t$0",
+      "{/each}"
+    ],
+    "description": "Svelte keyed each block"
+  },
+  "event handler": {
+    "prefix": "onclick",
+    "body": [
+      "onclick={${1:handleClick}}"
+    ],
+    "description": "Svelte event handler attribute"
+  },
+  "class toggle": {
+    "prefix": "class",
+    "body": [
+      "class:${1:name}={${2:condition}}"
+    ],
+    "description": "Svelte class directive"
+  },
+  "bind value": {
+    "prefix": "bind",
+    "body": [
+      "bind:value={${1:value}}"
+    ],
+    "description": "Svelte value binding"
+  },
+  "style block": {
+    "prefix": "style",
+    "body": [
+      "<style>",
+      "\t$0",
+      "</style>"
+    ],
+    "description": "Svelte style block"
+  },
+  "accessible button": {
+    "prefix": "btn",
+    "body": [
+      "<button type=\"button\" onclick={${1:handleClick}}>",
+      "\t$0",
+      "</button>"
+    ],
+    "description": "Button with explicit type"
+  },
+  "form submit": {
+    "prefix": "form",
+    "body": [
+      "<form onsubmit={${1:handleSubmit}}>",
+      "\t$0",
+      "</form>"
+    ],
+    "description": "Svelte form submit handler"
+  }
+}
