@@ -15,19 +15,20 @@ end
 return {
   {
     "nvim-treesitter/nvim-treesitter",
-    tag = "v0.10.0",
+    branch = "main",
+    lazy = false,
     build = ":TSUpdate",
     dependencies = { "nvim-treesitter/nvim-treesitter-textobjects" },
-    cmd = { "TSInstall", "TSInstallSync", "TSUpdate", "TSUninstall", "TSInstallInfo" },
-    event = { "BufReadPost", "BufNewFile" },
     opts = {
-      ensure_installed = {
+      install_dir = vim.fn.stdpath("data") .. "/site",
+      parsers = {
         "bash",
         "css",
         "go",
         "gomod",
         "html",
         "javascript",
+        "javascriptreact",
         "json",
         "lua",
         "markdown",
@@ -42,11 +43,45 @@ return {
         "vimdoc",
         "yaml",
       },
-      highlight = { enable = true },
-      indent = { enable = true },
+      filetypes = {
+        "bash",
+        "css",
+        "go",
+        "gomod",
+        "html",
+        "javascript",
+        "json",
+        "lua",
+        "markdown",
+        "php",
+        "python",
+        "rust",
+        "svelte",
+        "toml",
+        "typescript",
+        "typescriptreact",
+        "vim",
+        "vimdoc",
+        "yaml",
+      },
     },
     config = function(_, opts)
-      require("nvim-treesitter.configs").setup(opts)
+      require("nvim-treesitter").setup({ install_dir = opts.install_dir })
+
+      vim.api.nvim_create_user_command("TSInstallConfigured", function()
+        require("nvim-treesitter").install(opts.parsers)
+      end, { desc = "Install configured Treesitter parsers" })
+
+      vim.api.nvim_create_autocmd("FileType", {
+        group = vim.api.nvim_create_augroup("UserTreesitter", { clear = true }),
+        pattern = opts.filetypes,
+        callback = function()
+          if pcall(vim.treesitter.start) then
+            vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          end
+        end,
+      })
+
       require("nvim-treesitter-textobjects").setup({
         move = { set_jumps = true },
       })

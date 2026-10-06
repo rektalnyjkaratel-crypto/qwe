@@ -160,7 +160,7 @@ refactoring.nvim, async.nvim, blink.cmp,
 mason.nvim, nvim-lspconfig, conform.nvim, nvim-treesitter,
 nvim-treesitter-textobjects, gitsigns.nvim, nvim-dap, nvim-dap-ui, nvim-nio,
 vim-test.
-При пустом запуске загружается только lazy.nvim.
+При пустом запуске загружаются lazy.nvim и nvim-treesitter.
 Поиск и тесты загружаются по нажатию, серверы — по языку файла.
 Автодополнение работает на Lua без скачивания или компиляции отдельной библиотеки.
 Фронтовые файлы форматируются через Prettier внутри Node-проекта; для `.svelte`
@@ -169,8 +169,9 @@ vim-test.
 Нет стартового экрана, анимаций, автосессий, отдельного плагина дерева файлов,
 постоянного git blame, фоновых тестов, автозапуска отладки и проверки обновлений.
 Подсветка синтаксиса, комментарии, строка состояния и терминал — встроенные.
-Treesitter уточняет подсветку и даёт переходы по функциям/типам для языков проекта,
-а Gitsigns показывает изменения только в git-репозиториях.
+Treesitter уточняет подсветку и даёт переходы по функциям/типам для языков проекта.
+Парсеры ставятся в `~/.local/share/nvim/site`, а Gitsigns показывает изменения
+только в git-репозиториях.
 Ошибки подчёркиваются; всплывающее объяснение появляется по запросу.
 Go и Rust форматируются автоматически при сохранении и вручную через `Пробел cf`.
 У ty нет форматирования; для Python при необходимости можно запускать
@@ -190,9 +191,10 @@ Lua видит API Neovim только внутри конфига Neovim; об�
 
 ## Установка на другую машину
 
-Нужны Neovim 0.12.5+, Git, fzf > 0.36 и ripgrep (`rg`), а также инструменты
-нужных языков: Go, Rust/rustup с rustfmt, Node/npm, PHP/Composer, Lua/Busted,
-Python/uv или venv.
+Нужны Neovim 0.12.5+, Git, fzf > 0.36, ripgrep (`rg`), tar, curl,
+tree-sitter-cli 0.26.1+ и C compiler, а также инструменты нужных языков:
+Go, Rust/rustup с rustfmt, Node/npm, PHP/Composer, Lua/Busted, Python/uv
+или venv.
 Положи эту папку в `~/.config/nvim` либо сделай ссылку. При первом запуске lazy.nvim
 скачает плагины; версии зафиксированы в lazy-lock.json.
 
@@ -208,9 +210,17 @@ Python/uv или venv.
 :MasonInstall delve js-debug-adapter php-debug-adapter
 ```
 
+Для Treesitter один раз установи настроенные парсеры:
+
+```vim
+:TSInstallConfigured
+```
+
 На текущей машине Psalm пока не установлен, остальные серверы уже установлены.
-Обновления запускаются вручную: `:Lazy` для плагинов и `:Mason` для серверов.
-Для проверки — `:checkhealth vim.lsp`.
+На текущей машине tree-sitter-cli 0.27.0 установлен в `~/.local/bin`.
+Обновления запускаются вручную: `:Lazy` для плагинов, `:TSUpdate` для парсеров
+и `:Mason` для серверов. Для проверки — `:checkhealth vim.lsp`
+и `:checkhealth nvim-treesitter`.
 Подсказка по новым клавишам лежит в `nvim/ADDED_COMMANDS.md`.
 
 Документация: [Neovim LSP](https://neovim.io/doc/user/lsp/),
@@ -227,9 +237,11 @@ Python/uv или venv.
 ## Проверка на текущей машине
 
 Neovim 0.12.5, 6 октября 2026: конфиг загружается в headless-режиме.
-Проверена загрузка `refactoring.nvim`, `Пробел Re` для Go extract function
-на официальном fixture плагина после `gofmt`, `Пробел Rv` для TypeScript
-extract variable и подключение `rust_analyzer` к маленькому Cargo-проекту.
+Проверена миграция `nvim-treesitter` на новый `main` API, `:checkhealth
+nvim-treesitter`, загрузка `refactoring.nvim`, `Пробел Re` для Go extract
+function на официальном fixture плагина после `gofmt`, `Пробел Rv` для
+TypeScript extract variable и подключение `rust_analyzer` к маленькому
+Cargo-проекту.
 Для Go refactoring.nvim используется локальный запрос
 `queries/go/refactor_scope.scm`: текущий Go-парсер Treesitter хранит выражения
 прямо внутри `block`, а не в узле `statement_list`, который ожидает плагин.
