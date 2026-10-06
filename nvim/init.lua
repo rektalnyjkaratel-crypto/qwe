@@ -49,6 +49,7 @@ local map = vim.keymap.set
 local function open_explorer()
   vim.cmd("Lexplore! " .. vim.fn.fnameescape(require("config.project").root()))
 end
+local run = require("config.run")
 
 map("n", "<Esc>", "<cmd>nohlsearch<cr>", { desc = "Clear search highlight" })
 map("n", "<leader>d", vim.diagnostic.open_float, { desc = "Diagnostic under cursor" })
@@ -56,6 +57,15 @@ map("n", "<leader>e", open_explorer, { desc = "Explorer right" })
 map("n", "<leader>cL", function() require("config.info").lsp() end, { desc = "Show buffer LSP clients" })
 map("n", "<leader>cF", function() require("config.info").formatters() end, { desc = "Show buffer formatters" })
 map("n", "<leader>tt", "<cmd>botright 12split | terminal<cr>", { desc = "Terminal" })
+map("n", "<leader>rr", run.command("cargo run"), { desc = "Rust cargo run" })
+map("n", "<leader>rc", run.command("cargo check"), { desc = "Rust cargo check" })
+map("n", "<leader>rb", run.command("cargo build"), { desc = "Rust cargo build" })
+map("n", "<leader>rl", run.command("cargo clippy"), { desc = "Rust cargo clippy" })
+map("n", "<leader>rt", run.command("cargo test"), { desc = "Rust cargo test" })
+map("n", "<leader>Gp", run.go_test_package, { desc = "Go test current package" })
+map("n", "<leader>Gt", run.command("go test ./..."), { desc = "Go test all packages" })
+map("n", "<leader>Gb", run.command("go build ./..."), { desc = "Go build all packages" })
+map("n", "<leader>Gv", run.command("go vet ./..."), { desc = "Go vet all packages" })
 map("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Leave terminal mode" })
 
 require("config.lazy")

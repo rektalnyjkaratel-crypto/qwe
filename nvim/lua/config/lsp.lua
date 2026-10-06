@@ -21,23 +21,32 @@ end
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("UserLsp", { clear = true }),
   callback = function(event)
-    local map = function(lhs, rhs, desc)
-      vim.keymap.set("n", lhs, rhs, { buffer = event.buf, desc = desc })
+    local map = function(mode, lhs, rhs, desc)
+      vim.keymap.set(mode, lhs, rhs, { buffer = event.buf, desc = desc })
     end
-    map("gd", vim.lsp.buf.definition, "Go to definition")
-    map("gr", vim.lsp.buf.references, "References")
-    map("gi", vim.lsp.buf.implementation, "Go to implementation")
-    map("gy", vim.lsp.buf.type_definition, "Go to type definition")
-    map("K", vim.lsp.buf.hover, "Documentation")
-    map("<leader>rn", vim.lsp.buf.rename, "Rename symbol")
-    map("<leader>ca", function()
+
+    local code_actions = function()
       require("fzf-lua").lsp_code_actions({
         silent = true,
         previewer = false,
         winopts = { width = 0.8, height = 0.35 },
       })
-    end, "Code action")
-    map("<leader>cf", function() format_buffer(event.buf, true) end, "Format buffer")
+    end
+
+    map("n", "gd", vim.lsp.buf.definition, "Go to definition")
+    map("n", "gr", vim.lsp.buf.references, "References")
+    map("n", "gi", vim.lsp.buf.implementation, "Go to implementation")
+    map("n", "gy", vim.lsp.buf.type_definition, "Go to type definition")
+    map("n", "K", vim.lsp.buf.hover, "Documentation")
+    map("n", "<leader>rn", vim.lsp.buf.rename, "Rename symbol")
+    map({ "n", "x" }, "<leader>ca", code_actions, "Code action")
+    map("n", "<leader>cf", function() format_buffer(event.buf, true) end, "Format buffer")
+    map("n", "<leader>ch", function()
+      local filter = { bufnr = event.buf }
+      local enabled = not vim.lsp.inlay_hint.is_enabled(filter)
+      vim.lsp.inlay_hint.enable(enabled, filter)
+      vim.notify("Inlay hints " .. (enabled and "enabled" or "disabled"))
+    end, "Toggle inlay hints")
 
     if vim.tbl_contains({ "go", "rust" }, vim.bo[event.buf].filetype) then
       vim.api.nvim_clear_autocmds({ group = format_group, buffer = event.buf })
@@ -52,6 +61,15 @@ vim.api.nvim_create_autocmd("LspAttach", {
 })
 
 vim.lsp.config("gopls", {
+  root_dir = function(bufnr, on_dir)
+    local name = vim.api.nvim_buf_get_name(bufnr)
+    if name == "" then return end
+
+    local file = vim.uv.fs_realpath(name) or name
+    local root = vim.fs.root(file, { "go.work", "go.mod", ".git" }) or vim.fs.dirname(file)
+    local stat = root and vim.uv.fs_stat(root)
+    if stat and stat.type == "directory" then on_dir(root) end
+  end,
   settings = {
     gopls = {
       staticcheck = false,
