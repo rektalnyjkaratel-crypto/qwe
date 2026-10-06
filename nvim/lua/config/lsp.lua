@@ -18,6 +18,60 @@ local function format_buffer(bufnr, async)
   end
 end
 
+local function existing_root(bufnr, markers)
+  local name = vim.api.nvim_buf_get_name(bufnr)
+  if name == "" then return nil end
+
+  local file = vim.uv.fs_realpath(name) or name
+  local root = vim.fs.root(file, markers) or vim.fs.dirname(file)
+  local stat = root and vim.uv.fs_stat(root)
+  if stat and stat.type == "directory" then return root end
+end
+
+local function organize_imports()
+  local kinds = {
+    "source.removeUnusedImports.ts",
+    "source.organizeImports.ts",
+    "source.organizeImports",
+  }
+
+  local function apply_action(action, client)
+    if action.edit then
+      vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding or "utf-16")
+    end
+
+    local command = action.command
+    if command then
+      vim.lsp.buf.execute_command(type(command) == "table" and command or {
+        command = command,
+        arguments = action.arguments,
+      })
+    end
+  end
+
+  local function request_kind(index)
+    local kind = kinds[index]
+    if not kind then return end
+
+    local params = vim.lsp.util.make_range_params(0, "utf-16")
+    params.context = { only = { kind }, diagnostics = {} }
+    vim.lsp.buf_request_all(0, "textDocument/codeAction", params, function(results)
+      for client_id, result in pairs(results) do
+        local client = vim.lsp.get_client_by_id(client_id)
+        for _, action in ipairs(result.result or {}) do
+          if client and action.kind == kind then
+            apply_action(action, client)
+            break
+          end
+        end
+      end
+      vim.defer_fn(function() request_kind(index + 1) end, 100)
+    end)
+  end
+
+  request_kind(1)
+end
+
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("UserLsp", { clear = true }),
   callback = function(event)
@@ -40,6 +94,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
     map("n", "K", vim.lsp.buf.hover, "Documentation")
     map("n", "<leader>rn", vim.lsp.buf.rename, "Rename symbol")
     map({ "n", "x" }, "<leader>ca", code_actions, "Code action")
+    map("n", "<leader>ci", organize_imports, "Organize imports")
     map("n", "<leader>cf", function() format_buffer(event.buf, true) end, "Format buffer")
     map("n", "<leader>ch", function()
       local filter = { bufnr = event.buf }
@@ -62,30 +117,94 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 vim.lsp.config("gopls", {
   root_dir = function(bufnr, on_dir)
-    local name = vim.api.nvim_buf_get_name(bufnr)
-    if name == "" then return end
-
-    local file = vim.uv.fs_realpath(name) or name
-    local root = vim.fs.root(file, { "go.work", "go.mod", ".git" }) or vim.fs.dirname(file)
-    local stat = root and vim.uv.fs_stat(root)
-    if stat and stat.type == "directory" then on_dir(root) end
+    local root = existing_root(bufnr, { "go.work", "go.mod", ".git" })
+    if root then on_dir(root) end
   end,
   settings = {
     gopls = {
-      staticcheck = false,
       usePlaceholders = true,
       completeFunctionCalls = true,
       diagnosticsTrigger = "Save",
-      directoryFilters = { "-.git", "-node_modules", "-vendor", "-dist", "-build" },
+      directoryFilters = { "-.git", "-**/node_modules", "-vendor", "-dist", "-build" },
+      analyses = {
+        nilness = true,
+        unusedparams = true,
+        unusedwrite = true,
+        useany = true,
+      },
+      hints = {
+        assignVariableTypes = false,
+        compositeLiteralFields = true,
+        compositeLiteralTypes = false,
+        constantValues = true,
+        functionTypeParameters = true,
+        parameterNames = true,
+        rangeVariableTypes = false,
+      },
+      codelenses = {
+        generate = true,
+        regenerate_cgo = true,
+        run_govulncheck = false,
+        test = false,
+        tidy = true,
+        upgrade_dependency = true,
+        vendor = false,
+      },
     },
   },
 })
 
 vim.lsp.config("ts_ls", {
-  init_options = { disableAutomaticTypingAcquisition = true },
+  init_options = {
+    disableAutomaticTypingAcquisition = true,
+    preferences = {
+      importModuleSpecifierPreference = "shortest",
+      includePackageJsonAutoImports = "auto",
+      includeCompletionsForModuleExports = true,
+      includeCompletionsForImportStatements = true,
+      includeInlayParameterNameHints = "literals",
+      includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+      includeInlayFunctionParameterTypeHints = false,
+      includeInlayVariableTypeHints = false,
+      includeInlayVariableTypeHintsWhenTypeMatchesName = false,
+      includeInlayPropertyDeclarationTypeHints = true,
+      includeInlayFunctionLikeReturnTypeHints = false,
+      includeInlayEnumMemberValueHints = true,
+    },
+  },
+  settings = {
+    javascript = {
+      inlayHints = {
+        includeInlayParameterNameHints = "literals",
+        includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+        includeInlayFunctionLikeReturnTypeHints = false,
+        includeInlayVariableTypeHints = false,
+        includeInlayPropertyDeclarationTypeHints = true,
+        includeInlayEnumMemberValueHints = true,
+      },
+      preferences = {
+        importModuleSpecifierPreference = "shortest",
+        includePackageJsonAutoImports = "auto",
+      },
+    },
+    typescript = {
+      inlayHints = {
+        includeInlayParameterNameHints = "literals",
+        includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+        includeInlayFunctionLikeReturnTypeHints = false,
+        includeInlayVariableTypeHints = false,
+        includeInlayPropertyDeclarationTypeHints = true,
+        includeInlayEnumMemberValueHints = true,
+      },
+      preferences = {
+        importModuleSpecifierPreference = "shortest",
+        includePackageJsonAutoImports = "auto",
+      },
+    },
+  },
   root_dir = function(bufnr, on_dir)
-    on_dir(vim.fs.root(bufnr, { "tsconfig.json", "jsconfig.json", "package.json", ".git" })
-      or vim.fs.dirname(vim.api.nvim_buf_get_name(bufnr)))
+    local root = existing_root(bufnr, { "tsconfig.json", "jsconfig.json", "package.json", ".git" })
+    if root then on_dir(root) end
   end,
 })
 
