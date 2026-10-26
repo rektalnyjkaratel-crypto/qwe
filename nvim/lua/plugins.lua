@@ -127,7 +127,7 @@ return {
   },
   {
     "stevearc/conform.nvim",
-    ft = { "javascript", "javascriptreact", "typescript", "typescriptreact", "svelte", "html", "css", "scss", "json", "jsonc", "yaml", "markdown" },
+    ft = { "javascript", "javascriptreact", "typescript", "typescriptreact", "svelte", "html", "css", "scss", "json", "jsonc", "yaml", "markdown", "python" },
     opts = function()
       local util = require("conform.util")
       return {
@@ -135,6 +135,18 @@ return {
           prettier = {
             cwd = util.root_file({ "package.json", ".prettierrc", "prettier.config.js", "prettier.config.mjs", "prettier.config.cjs" }),
             require_cwd = true,
+          },
+          ruff_fix = {
+            command = "uv",
+            prepend_args = { "tool", "run", "ruff" },
+          },
+          ruff_format = {
+            command = "uv",
+            prepend_args = { "tool", "run", "ruff" },
+          },
+          ruff_organize_imports = {
+            command = "uv",
+            prepend_args = { "tool", "run", "ruff" },
           },
         },
         formatters_by_ft = {
@@ -150,6 +162,7 @@ return {
           jsonc = { "prettier" },
           yaml = { "prettier" },
           markdown = { "prettier" },
+          python = { "ruff_fix", "ruff_format", "ruff_organize_imports" },
         },
         format_on_save = function(bufnr)
           local enabled = {
@@ -163,6 +176,7 @@ return {
             scss = true,
             json = true,
             jsonc = true,
+            python = true,
           }
           if not enabled[vim.bo[bufnr].filetype] then return end
           return { timeout_ms = 2000, lsp_format = "never" }
@@ -190,6 +204,20 @@ return {
       files = { rg_opts = "--files --hidden --glob !.git" },
       grep = { rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden --glob !.git -e" },
     },
+  },
+  {
+    "kristijanhusak/vim-dadbod-ui",
+    cmd = { "DB", "DBUI", "DBUIToggle", "DBUIAddConnection", "DBUIFindBuffer" },
+    keys = {
+      { "<leader>db", "<cmd>DBUIToggle<cr>", desc = "Database UI" },
+    },
+    dependencies = {
+      { "tpope/vim-dadbod", lazy = true },
+      { "kristijanhusak/vim-dadbod-completion", ft = { "sql", "mysql", "plsql" }, lazy = true },
+    },
+    init = function()
+      vim.g.db_ui_use_nerd_fonts = 0
+    end,
   },
   {
     "folke/flash.nvim",

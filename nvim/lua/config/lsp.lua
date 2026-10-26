@@ -29,7 +29,9 @@ local function existing_root(bufnr, markers)
 end
 
 local function organize_imports()
-  local kinds = {
+  local kinds = vim.bo.filetype == "python" and {
+    "source.organizeImports.ruff",
+  } or {
     "source.removeUnusedImports.ts",
     "source.organizeImports.ts",
     "source.organizeImports",
@@ -75,6 +77,13 @@ end
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("UserLsp", { clear = true }),
   callback = function(event)
+    local client = vim.lsp.get_client_by_id(event.data.client_id)
+    if client and client.name == "ruff" then
+      -- ty owns Python navigation and type-aware hover; Ruff owns linting,
+      -- fixes, formatting, and import organization.
+      client.server_capabilities.hoverProvider = false
+    end
+
     local map = function(mode, lhs, rhs, desc)
       vim.keymap.set(mode, lhs, rhs, { buffer = event.buf, desc = desc })
     end
@@ -289,6 +298,18 @@ vim.lsp.config("psalm", {
   root_markers = { "psalm.xml", "psalm.xml.dist" },
 })
 
+-- Keep Python tooling outside the editor and project environments. uv caches
+-- the tools; the LSP root remains the opened project's configuration directory.
+vim.lsp.config("ty", {
+  cmd = { "uv", "tool", "run", "ty", "server" },
+  root_markers = { "ty.toml", "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "uv.lock", ".git" },
+})
+
+vim.lsp.config("ruff", {
+  cmd = { "uv", "tool", "run", "ruff", "server" },
+  root_markers = { "pyproject.toml", "ruff.toml", ".ruff.toml", "uv.lock", ".git" },
+})
+
 -- Only these servers can start, and only for matching file types.
 vim.lsp.enable({
   "gopls",
@@ -304,5 +325,6 @@ vim.lsp.enable({
   "psalm",
   "lua_ls",
   "ty",
+  "ruff",
   "rust_analyzer",
 })

@@ -18,7 +18,7 @@ Svelte/Vite, PHP, Lua и Python.
 | Svelte/Vite | svelte-language-server; HTML/CSS/JSON/Tailwind/Emmet по файлам | Vitest, Playwright и другие |
 | PHP | Intelephense; Psalm в проектах с psalm.xml | PHPUnit или Pest из проекта |
 | Lua | lua-language-server | Busted |
-| Python | ty | pytest; для проекта с uv.lock — uv run pytest |
+| Python | ty и Ruff | pytest; для проекта с uv.lock — uv run pytest |
 
 ## Каждый день
 
@@ -28,6 +28,7 @@ Svelte/Vite, PHP, Lua и Python.
 | Клавиши | Действие |
 | --- | --- |
 | `Пробел ff` | Найти файл в проекте |
+| `Пробел db` | Открыть интерфейс SQLite и других баз данных |
 | `Пробел e` | Открыть или закрыть explorer справа |
 | `Пробел fg` | Найти текст в проекте |
 | `Пробел fw` | Найти слово под курсором |
@@ -80,6 +81,12 @@ Svelte/Vite, PHP, Lua и Python.
 Обычные команды остаются обычными: `/`, `f`, `t`, `%`, `gcc`, `gc`,
 `Ctrl-w h/j/k/l`, `:e`, `:w`, `:q`, `:Explore`, `:Lexplore`.
 Самодельных команд нет.
+
+## SQLite и другие базы
+
+Нажми `Пробел db` или выполни `:DBUI`. В панели нажми `A` и укажи URL,
+например `sqlite:./data/app.db`. Запрос открывается из панели, а запись
+файла (`:w`) выполняет его. Для SQLite нужен `sqlite3` в `PATH`.
 
 Rust/Go команды сохраняют текущий файл и открывают нижний терминал в корне
 проекта. `Пробел Gp` запускает `go test` только для пакета текущего файла,
@@ -157,11 +164,11 @@ PHP обычно достаточно включить Xdebug в PHP. Для Doc
 
 ## Что оставлено
 
-Всего 17 плагинов с менеджером: lazy.nvim, fzf-lua, flash.nvim, nvim-autopairs,
+Всего 20 плагинов с менеджером: lazy.nvim, fzf-lua, flash.nvim, nvim-autopairs,
 refactoring.nvim, async.nvim, blink.cmp,
 mason.nvim, nvim-lspconfig, conform.nvim, nvim-treesitter,
 nvim-treesitter-textobjects, gitsigns.nvim, nvim-dap, nvim-dap-ui, nvim-nio,
-vim-test.
+vim-test, vim-dadbod, vim-dadbod-ui и vim-dadbod-completion.
 При пустом запуске загружаются lazy.nvim и nvim-treesitter.
 Поиск и тесты загружаются по нажатию, серверы — по языку файла.
 Автодополнение работает на Lua без скачивания или компиляции отдельной библиотеки.
@@ -175,9 +182,11 @@ Treesitter уточняет подсветку и даёт переходы по
 Парсеры ставятся в `~/.local/share/nvim/site`, а Gitsigns показывает изменения
 только в git-репозиториях.
 Ошибки подчёркиваются; всплывающее объяснение появляется по запросу.
-Go и Rust форматируются автоматически при сохранении и вручную через `Пробел cf`.
-У ty нет форматирования; для Python при необходимости можно запускать
-`ruff format` из терминала проекта.
+Go, Rust и Python форматируются автоматически при сохранении и вручную через
+`Пробел cf`. Для Python `ty` отвечает за типы, а Ruff — за lint, автоисправления,
+форматирование и сортировку imports. Оба LSP и команды Ruff запускаются через
+`uv tool run`, поэтому глобально ставить `ty` и `ruff` не нужно. `uv` кеширует
+инструменты; конфигурация Ruff берётся из корня открытого проекта.
 
 Go проверяет диагностику при сохранении. gopls использует безопасный набор
 анализаторов, включая nilness, unused params, unused writes и useany.
@@ -206,7 +215,7 @@ Go, Rust/rustup с rustfmt, Node/npm, PHP/Composer, Lua/Busted, Python/uv
 Один раз установи серверы стандартной командой Mason:
 
 ```vim
-:MasonInstall gopls rust-analyzer typescript-language-server svelte-language-server eslint-lsp html-lsp css-lsp json-lsp tailwindcss-language-server emmet-language-server prettier intelephense psalm lua-language-server ty
+:MasonInstall gopls rust-analyzer typescript-language-server svelte-language-server eslint-lsp html-lsp css-lsp json-lsp tailwindcss-language-server emmet-language-server prettier intelephense psalm lua-language-server
 ```
 
 Для отладки установи адаптеры:
@@ -230,6 +239,7 @@ Go, Rust/rustup с rustfmt, Node/npm, PHP/Composer, Lua/Busted, Python/uv
 
 Документация: [Neovim LSP](https://neovim.io/doc/user/lsp/),
 [ty](https://docs.astral.sh/ty/editors/),
+[Ruff](https://docs.astral.sh/ruff/editors/setup/),
 [vim-test](https://github.com/vim-test/vim-test),
 [fzf-lua](https://github.com/ibhagwan/fzf-lua),
 [blink.cmp](https://cmp.saghen.dev/configuration/completion),
